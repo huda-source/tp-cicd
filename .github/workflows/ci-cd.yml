@@ -1,0 +1,54 @@
+name: CI-CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify files
+        run: |
+          test -f index.html
+          test -f app.js
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Test HTML
+        run: grep "<html" index.html
+
+      - name: Test JS
+        run: grep "function" app.js
+
+  package:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create build
+        run: |
+          mkdir build
+          cp index.html build/
+          cp app.js build/
+          cp style.css build/
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: webapp
+          path: build/
+          
